@@ -1,0 +1,78 @@
+name: update-runtime
+
+on:
+  repository_dispatch:
+    types: debug-updater
+  schedule:
+    - cron: "0 2 * * *"
+
+# Checks out HEAD from upstream/repo
+# Pushes to fork/repo
+# Opens PR against upstream
+# Requires a secret in the repo containing this repo named PAT with access to fork
+
+jobs:
+  check:
+    strategy:
+      matrix:
+        config:
+          - repo: "de.klayout.KLayout"
+            manifest: "de.klayout.KLayout.yaml"
+            upstream: flathub
+            fork: willsALMANJ
+
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        repository: ${{ matrix.config.upstream }}/${{ matrix.config.repo }}
+        path: ${{ matrix.config.repo }}
+
+    - name: Point git remote to fork
+      run: |
+        git config user.password ${{ secrets.PAT }}
+        git remote set-url origin https://github.com/${{ matrix.config.fork }}/${{ matrix.config.repo }}
+        git fetch --unshallow -p origin
+      working-directory: ${{ matrix.config.repo }}
+
+    - name: Checkout updater
+      uses: actions/checkout@v2
+      with:
+        path: update_runtime
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r ${GITHUB_WORKSPACE}/update_runtime/requirements.txt
+
+    - name: Install dependencies - flatpak
+      run: |
+        sudo apt update
+        sudo apt install flatpak
+
+    - name: Install Flathub
+      run: |
+        sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+        sudo flatpak update --appstream
+
+    - name: Run update_runtime.py
+      run: python ${GITHUB_WORKSPACE}/update_runtime/update_runtime.py ${GITHUB_WORKSPACE}/${{ matrix.config.repo }}/${{ matrix.config.manifest }}
+
+    - name: Show diff
+      run: git diff
+      working-directory: ${{ matrix.config.repo }}
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@172ec762f8ac8e050062398456fccd30444f8f30
+      with:
+        path: ${{ matrix.config.repo }}
+        title: Update runtime version
+        token: ${{ secrets.PAT }}
+        request-to-parent: true
