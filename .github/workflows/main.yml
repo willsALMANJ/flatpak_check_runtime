@@ -4,7 +4,7 @@ on:
   repository_dispatch:
     types: debug-updater
   schedule:
-    - cron: "0 2 * * *"
+    - cron: "0 2 * * 0"
 
 # Checks out HEAD from upstream/repo
 # Pushes to fork/repo
