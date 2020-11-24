@@ -19,7 +19,7 @@ jobs:
           - repo: "de.klayout.KLayout"
             manifest: "de.klayout.KLayout.yaml"
             upstream: flathub
-            fork: willsALMANJ
+            fork: wshanks
 
     runs-on: ubuntu-20.04
 
