@@ -31,13 +31,6 @@ jobs:
         path: ${{ matrix.config.repo }}
         persist-credentials: false
 
-    - name: Point git remote to fork
-      run: |
-        git remote set-url origin https://${{ secrets.PAT}}:x-oauth-basic@github.com/${{ matrix.config.fork }}/${{ matrix.config.repo }}
-        git fetch --unshallow -p origin
-        git push --force
-      working-directory: ${{ matrix.config.repo }}
-
     - name: Checkout updater
       uses: actions/checkout@v2
       with:
@@ -71,9 +64,9 @@ jobs:
       working-directory: ${{ matrix.config.repo }}
 
     - name: Create Pull Request
-      uses: peter-evans/create-pull-request@b7eabdce593cfe57cb1d33d308f2ca3bf255852c
+      uses: peter-evans/create-pull-request@v3
       with:
         path: ${{ matrix.config.repo }}
         title: Update runtime version
         token: ${{ secrets.PAT }}
-        request-to-parent: true
+        push-to-fork: ${{ matrix.config.fork }}/${{ matrix.config.repo }}
