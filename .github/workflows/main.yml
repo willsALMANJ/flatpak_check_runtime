@@ -3,6 +3,7 @@ name: update-runtime
 on:
   repository_dispatch:
     types: debug-updater
+  workflow_dispatch:
   schedule:
     - cron: "0 2 * * 0"
 
