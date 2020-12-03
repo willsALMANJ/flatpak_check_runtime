@@ -10,7 +10,7 @@ on:
 # Checks out HEAD from upstream/repo
 # Pushes to fork/repo
 # Opens PR against upstream
-# Requires a secret in the repo containing this repo named PAT with access to fork
+# Requires a secret in this repo named PAT with access to fork
 
 jobs:
   check:
